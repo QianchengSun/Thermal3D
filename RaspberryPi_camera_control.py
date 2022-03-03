@@ -75,8 +75,8 @@ def take_images_USB(camera_index, output_path, image_name):
     It is not necessary to use into data collection, but it is important for the camera test.
     """
     # show the video capture images
-    # plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    # plt.show()
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.show()
 
     # create the output directory, if not present then create one
     if not os.path.exists(output_path):
@@ -131,4 +131,70 @@ def real_time_video_USB(camera_index, quit_key):
 # %% Fuction test to rendering the video in real time
 real_time_video_USB(camera_index= USB_camera_index,
                     quit_key= "q")
+# %%
+"""
+Question:
+
+The image that obtained without the GPS location, that means probably cannot use OpenMVG directly,
+Therefore, how to obtain the GPS location is important.
+
+Reference :
+https://github.com/openMVG/openMVG/issues/822
+
+In here, we can use the image that without the GPS information, 
+howeve, the dense point generated without GPS information will noticeably sparser.
+
+"""
+
+
+#%%
+# Here should add a key hit to take the screen shot of the video camera
+def images_collect_USB(camera_index, output_path, quit_key, shoot_key):
+    # Connect to webcam
+    camera_USB = cv2.VideoCapture(camera_index)
+    
+    image_counter = 0
+    # Loop through every frame until we close our webcam
+    while camera_USB.isOpened():
+        ret, image = camera_USB.read()
+        if ret is False:
+            print("The USB camera is OFF")
+        # show image
+        cv2.imshow("webcam", image)
+        # effectively checking whether or not we're hitting anything on our keyboard
+        # cv2.waitKey(1) gives us a chance to hit a key on our keyboard
+        # 0xFF == ord("q") unpacks what is actually being hit
+
+        # create the output directory, if not present then create one
+        if not os.path.exists(output_path):
+            os.mkdir(output_path)
+        # if the key that hit is "q", we are going to break out of our while loop
+
+
+        # Check whether "q" has been hit and stops the loop 
+        if cv2.waitKey(1) & 0xFF == ord(quit_key):
+            break
+        # check whether "t" has been hit to save the image
+        elif cv2.waitKey(1) & 0xFF == ord(shoot_key):
+            shoot_image_name = "shoot_image_{}.jpg".format(image_counter)
+            cv2.imwrite(os.path.join(output_path, shoot_image_name), image)
+            image_counter += 1
+
+    camera_USB.release()
+    cv2.destroyAllWindows()
+#%%
+"""
+Note: 
+Good thing:
+    Be able to use single key to control if you take picture or not.
+
+Bad thing: 
+    Only can take image per-minute
+"""
+
+# Test image collection function
+images_collect_USB(camera_index= USB_camera_index,
+                    output_path= image_save_path,
+                    quit_key= "q",
+                    shoot_key= "c")
 # %%
